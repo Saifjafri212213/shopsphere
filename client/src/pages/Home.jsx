@@ -3,22 +3,25 @@ import api, { getErrorMessage } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
 import { CATEGORIES } from '../utils/format.js';
+import useDebounce from '../hooks/useDebounce.js';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
+  const [filters, setFilters] = useState({ category: '', sort: 'newest' });
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search);
 
   useEffect(() => {
-    // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
     setLoading(true);
+    setError('');
     api
-      .get('/products', { params: filters })
+      .get('/products', { params: { ...filters, search: debouncedSearch } })
       .then(({ data }) => setProducts(data))
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [filters]);
+  }, [debouncedSearch, filters]);
 
   const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
 
@@ -30,7 +33,7 @@ export default function Home() {
       </div>
 
       <div className="filters">
-        <input placeholder="Search products..." value={filters.search} onChange={update('search')} />
+        <input placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
         <select value={filters.category} onChange={update('category')}>
           <option value="">All categories</option>
           {CATEGORIES.map((c) => (
