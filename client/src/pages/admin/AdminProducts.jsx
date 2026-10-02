@@ -40,10 +40,15 @@ export default function AdminProducts() {
     setForm({ ...empty, ...p, price: String(p.price), stock: String(p.stock) });
   };
 
-  // TODO: add a confirmation dialog before deleting.
-  const remove = async (id) => {
-    await api.delete(`/products/${id}`);
-    load();
+  const remove = async (product) => {
+    if (!window.confirm(`Delete ${product.name}? This cannot be undone.`)) return;
+    try {
+      setError('');
+      await api.delete(`/products/${product._id}`);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   return (
@@ -92,7 +97,7 @@ export default function AdminProducts() {
               <td>{p.stock}</td>
               <td className="row">
                 <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
+                <button className="btn btn-danger" onClick={() => remove(p)}>Delete</button>
               </td>
             </tr>
           ))}
