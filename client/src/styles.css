@@ -101,3 +101,12 @@ textarea { min-height: 80px; }
 .footer { text-align: center; color: var(--muted); padding: 24px; border-top: 1px solid var(--border); }
 
 /* TODO: the layout breaks on small screens (<600px) - see "Mobile responsive" issue */
+
+.cart-toast {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 6px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.875rem;
+}
