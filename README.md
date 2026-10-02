@@ -89,6 +89,18 @@ npm run dev                 # app on http://localhost:5173
 | GET    | `/api/orders`             | Admin    | All orders               |
 | PATCH  | `/api/orders/:id/status`  | Admin    | Change order status      |
 
+## 📸 UI Highlights & PR Changes
+
+### PR #1: Pincode Validation (`fix/2-validate-pincode`)
+
+| Before Changes | After Changes |
+| :---: | :---: |
+| **No client validation on pincode** | **Inline 6-digit pincode validation error** |
+| ![Checkout UI Before Changes](./docs/screenshots/checkout_before_changes.png) | ![Checkout UI After Changes](./docs/screenshots/checkout_after_changes.png) |
+
+* **Before:** Entering an invalid pincode (e.g. 5 digits or starting with `0`) allowed the form to submit without client-side error feedback.
+* **After:** Client-side regex check (`/^[1-9][0-9]{5}$/`) validates the input and shows `Please enter a valid 6-digit pincode (cannot start with 0)` under the field.
+
 ## 🤝 Contributing
 
 We ❤️ contributions! Read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and pick an issue labelled
