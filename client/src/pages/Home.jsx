@@ -9,18 +9,27 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
+    let active = true;
     setLoading(true);
+    setError('');
     api
-      .get('/products', { params: filters })
-      .then(({ data }) => setProducts(data))
-      .catch((err) => setError(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }, [filters]);
+      .get('/products', { params: { ...filters, page, limit: 12 } })
+      .then(({ data }) => {
+        if (active) { setProducts(data.products); setTotalPages(data.totalPages); }
+      })
+      .catch((err) => { if (active) setError(getErrorMessage(err)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [filters, page]);
 
-  const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
+  const update = (key) => (e) => {
+    setPage(1);
+    setFilters((f) => ({ ...f, [key]: e.target.value }));
+  };
 
   return (
     <section>
@@ -56,6 +65,13 @@ export default function Home() {
             <ProductCard key={p._id} product={p} />
           ))}
         </div>
+      )}
+      {!loading && !error && totalPages > 1 && (
+        <nav className="pagination" aria-label="Product pages">
+          <button className="btn btn-ghost" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
+          <span>Page {page} of {totalPages}</span>
+          <button className="btn btn-ghost" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+        </nav>
       )}
     </section>
   );

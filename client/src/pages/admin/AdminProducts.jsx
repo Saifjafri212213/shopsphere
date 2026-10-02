@@ -10,11 +10,16 @@ export default function AdminProducts() {
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const load = () => api.get('/products').then(({ data }) => setProducts(data));
+  const load = () => api.get('/products', { params: { page, limit: 12 } }).then(({ data }) => {
+    setProducts(data.products);
+    setTotalPages(data.totalPages);
+  });
   useEffect(() => {
-    load();
-  }, []);
+    load().catch((err) => setError(getErrorMessage(err)));
+  }, [page]);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -98,6 +103,13 @@ export default function AdminProducts() {
           ))}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <nav className="pagination" aria-label="Admin product pages">
+          <button className="btn btn-ghost" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
+          <span>Page {page} of {totalPages}</span>
+          <button className="btn btn-ghost" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+        </nav>
+      )}
     </section>
   );
 }
