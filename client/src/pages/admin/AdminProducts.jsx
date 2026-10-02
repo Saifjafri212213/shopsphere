@@ -10,6 +10,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const load = () => api.get('/products').then(({ data }) => setProducts(data));
   useEffect(() => {
@@ -40,12 +41,13 @@ export default function AdminProducts() {
     setForm({ ...empty, ...p, price: String(p.price), stock: String(p.stock) });
   };
 
-  const remove = async (product) => {
-    if (!window.confirm(`Delete ${product.name}? This cannot be undone.`)) return;
+  const remove = async () => {
+    if (!pendingDelete) return;
     try {
       setError('');
-      await api.delete(`/products/${product._id}`);
+      await api.delete(`/products/${pendingDelete._id}`);
       await load();
+      setPendingDelete(null);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -97,12 +99,24 @@ export default function AdminProducts() {
               <td>{p.stock}</td>
               <td className="row">
                 <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p)}>Delete</button>
+                <button className="btn btn-danger" onClick={() => setPendingDelete(p)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {pendingDelete && (
+        <div className="modal-backdrop">
+          <div className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+            <h2 id="delete-title">Delete {pendingDelete.name}?</h2>
+            <p>This action cannot be undone.</p>
+            <div className="row">
+              <button className="btn btn-ghost" onClick={() => setPendingDelete(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={remove}>Delete product</button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
